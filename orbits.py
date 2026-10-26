@@ -7,7 +7,7 @@ import numpy as np
 
 
 _G_mks = 6.67430E-11  # G in si units
-G = _G_mks * 1E-9 * 1E-24  # G in km, kg^24, and s
+G = _G_mks * 1E-9 * 1E+24  # G in km, kg^24, and s
 
 
 class Orbiter:
