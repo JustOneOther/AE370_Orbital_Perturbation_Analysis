@@ -98,7 +98,7 @@ def get_starting_bodies() -> tuple[list[Planet], list[Orbiter]]:
 
 	planet_masses = [1988410E+00, 4.8685E+00, 5.97219E+00, 6.4171E-01, 18.9819E+02, 5.6834E+02]
 
-	orbiter_names = ["LEO Orbiter", "MEO Orbiter", "GEO Orbiter"]
+	orbiter_names = ["LEO Orbiter", "MEO Orbiter", "GSO Orbiter"]
 
 	r_earth = 6371
 	s_earth = planet_pos_vel[2]
@@ -135,12 +135,13 @@ def get_starting_bodies() -> tuple[list[Planet], list[Orbiter]]:
 
 def f_with_n_orbiters(state: np.ndarray, grav_param_mat: np.ndarray, n_orbiters: int) -> np.ndarray:
 	f = np.zeros(state.size)
+	n_bodies = len(state) // 6
 
-	for i in range(len(state) // 6):
+	for i in range(n_bodies):
 		start = 6 * i
 		f[start:start + 3] = state[start+3:start+6]
 
-		for j in range(len(state) // 6 - n_orbiters):
+		for j in range(n_bodies - n_orbiters):
 			bod_start = 6 * (j + n_orbiters)
 			if bod_start == start: continue
 
