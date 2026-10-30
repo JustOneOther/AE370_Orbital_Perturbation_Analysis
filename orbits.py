@@ -14,21 +14,53 @@ class Orbiter:
 	"""
 	Massless orbiter
 	"""
+	_taken_ids: int = 0
+
 	def __init__(self, name: str, state: np.ndarray):
 		self.name = name
 		self.position = np.array(state[0])
 		self.velocity = np.array(state[1])
+		self.id = Orbiter._taken_ids
+		Orbiter._taken_ids += 1
 
 
-class Planet:
+class Planet(Orbiter):
 	"""
 	Planet of non-negligible mass
 	"""
 	def __init__(self, name: str, state: np.ndarray, mass: float):
-		self.name: str = name
-		self.position: np.ndarray = state[0]
-		self.velocity: np.ndarray = state[1]
+		super().__init__(name, state)
 		self.mass: float = mass
+		self.grav_param: float = self.mass * G
+
+
+def min_example() -> tuple[list[Planet], list[Orbiter]]:
+	orbiter_names = ["LEO Orbiter", "MEO Orbiter", "GEO Orbiter"]
+	r_earth = 6371
+
+	mu_earth = 3.986004418E+05
+
+	# Position and velocity vectors are calculated on an arbitrary plane for now
+	r_leo = np.array([r_earth + 1000, 0, 0])  # Halfway to MEO
+	r_meo = np.array([r_earth + 20350, 0, 0])  # Around GPS alt
+	r_geo = np.array([r_earth + 35786, 0, 0])  # Geostationary orbit
+
+	v_leo = np.array([0, np.sqrt(mu_earth / r_leo[0]), 0])
+	v_meo = np.array([0, np.sqrt(mu_earth / r_meo[0]), 0])
+	v_geo = np.array([0, np.sqrt(mu_earth / r_geo[0]), 0])
+
+	orbiter_states_rel = [(r_leo, v_leo), (r_meo, v_meo), (r_geo, v_geo)]
+
+	orbiter_states = [np.array(s) for s in orbiter_states_rel]
+
+	# Build orbiters first
+	orbs = [Orbiter(*attributes) for attributes in zip(orbiter_names, orbiter_states)]
+	planets = [Planet("Earth", np.array([[0, 0, 0], [0, 0, 0]]), 5.97219E+00)]
+
+	orbs.sort(key=lambda x: x.id)
+	planets.sort(key=lambda x: x.id)
+
+	return planets, orbs
 
 
 def get_starting_bodies() -> tuple[list[Planet], list[Orbiter]]:
@@ -85,7 +117,35 @@ def get_starting_bodies() -> tuple[list[Planet], list[Orbiter]]:
 
 	orbiter_states = [s_earth + np.array(s) for s in orbiter_states_rel]
 
-	return (
-		[Planet(*attributes) for attributes in zip(planet_names, planet_pos_vel, planet_masses)],
-		[Orbiter(*attributes) for attributes in zip(orbiter_names, orbiter_states)]
-	)
+	# Find barycenter of system, should be slightly off of solar system expected
+	bary_coords = sum([rv * m for rv, m in zip(planet_pos_vel, planet_masses)]) / sum(planet_masses)
+
+	orbiter_states = [i - bary_coords for i in orbiter_states]
+	planet_pos_vel = [i - bary_coords for i in planet_pos_vel]
+
+	# Build orbiters first
+	orbs = [Orbiter(*attributes) for attributes in zip(orbiter_names, orbiter_states)]
+	planets = [Planet(*attributes) for attributes in zip(planet_names, planet_pos_vel, planet_masses)]
+
+	orbs.sort(key=lambda x: x.id)
+	planets.sort(key=lambda x: x.id)
+
+	return planets, orbs
+
+
+def f_with_n_orbiters(state: np.ndarray, grav_param_mat: np.ndarray, n_orbiters: int) -> np.ndarray:
+	f = np.zeros(state.size)
+
+	for i in range(len(state) // 6):
+		start = 6 * i
+		f[start:start + 3] = state[start+3:start+6]
+
+		for j in range(len(state) // 6 - n_orbiters):
+			bod_start = 6 * (j + n_orbiters)
+			if bod_start == start: continue
+
+			r = state[bod_start:bod_start + 3] - state[start:start + 3]
+
+			f[start + 3:start + 6] += grav_param_mat[j] * r / (np.linalg.norm(r) ** 3)
+
+	return f
