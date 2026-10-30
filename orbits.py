@@ -77,9 +77,9 @@ def get_starting_bodies() -> tuple[list[Planet], list[Orbiter]]:
 	r_meo = np.array([r_earth + 20350, 0, 0])  # Around GPS alt
 	r_geo = np.array([r_earth + 35786, 0, 0])  # Geostationary orbit
 
-	v_leo = np.array([0, np.sqrt(mu_earth / r_leo), 0])
-	v_meo = np.array([0, np.sqrt(mu_earth / r_meo), 0])
-	v_geo = np.array([0, np.sqrt(mu_earth / r_geo), 0])
+	v_leo = np.array([0, np.sqrt(mu_earth / r_leo[0]), 0])
+	v_meo = np.array([0, np.sqrt(mu_earth / r_meo[0]), 0])
+	v_geo = np.array([0, np.sqrt(mu_earth / r_geo[0]), 0])
 
 	orbiter_states_rel = [(r_leo, v_leo), (r_meo, v_meo), (r_geo, v_geo)]
 
