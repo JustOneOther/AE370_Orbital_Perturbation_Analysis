@@ -5,7 +5,8 @@ Szymanski.
 
 
 ## Requirements
-AE370 default kernel with Python 3.12.14. SymPy installed in addition. 
+Python 3.14.4 with sympy, numpy, matplotlib, scipy, and their dependencies installed via pip. For visualization on linux-based 
+operating systems, pyqt6 should be installed via pip.
 
 ## Units
 
@@ -16,4 +17,5 @@ To minimize numerical error and the simplicity of interfacing with other program
 - Seconds
 
 ## Data
+
 Planet positions and velocities are from JPL Horizons (https://ssd.jpl.nasa.gov/horizons/app.html), for 2026-01-01 00:00:00.
