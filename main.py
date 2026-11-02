@@ -1,9 +1,9 @@
 """This file contains the code that is to run the analysis"""
 import sys
 from pathlib import Path
-
-import integrators
 import matplotlib.pyplot as plt
+import integrators
+
 import orbits
 import time
 
