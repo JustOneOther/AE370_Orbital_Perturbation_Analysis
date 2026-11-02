@@ -166,7 +166,7 @@ class IntegratorData:
 		return max_mag_err
 
 	def calc_plane_metric(self):
-		max_out_of_plane = [np.max(state[:, 2]) for state in self.orb_pos_eci]
+		max_out_of_plane = [np.max(np.abs(state[:, 2])) for state in self.orb_pos_eci]
 
 		return max_out_of_plane
 
