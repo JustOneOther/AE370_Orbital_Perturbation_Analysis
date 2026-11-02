@@ -73,22 +73,43 @@ for i in range(6):
 	print("\n")
 
 
+# Calculate error metrics
+
+error_metrics = [
+	[
+		str(datum.integrator),
+		datum.integrator.step_size,
+		list(zip(
+			datum.integrator.body_names[:datum.integrator.n_orbiters],
+			datum.calc_norm_metric(),
+			datum.calc_plane_metric()))
+	] for datum in integrator_data]
+
+
 # Plot figures
 
-f = plt.figure(figsize=(4000, 6000, 'px'))
-
+f = plt.figure(figsize=(6000, 4000, 'px'))
 axes = [f.add_subplot(2, 3, i + 1, projection='3d') for i in range(6)]
 
 [data.plot_orbiters(ax) for data, ax in zip(integrator_data, axes)]
 
+f_prog_export = plt.figure(figsize=(4000, 2000, 'px'))
+axes_prog_export = [f_prog_export.add_subplot(1, 2, i + 1, projection='3d') for i in range(2)]
+
+[data.plot_orbiters(ax) for data, ax in zip((integrator_data[0], integrator_data[3]), axes_prog_export)]
+
+[ax.legend(prop={'size': 24}) for ax in axes_prog_export]
+[ax.title.set_size(24) for ax in axes_prog_export]
+
+f_prog_export.show()
+f_prog_export.savefig(Path(".") / "exports" / "systemstate")
+
 
 # Print error metrics
 
-for datum in integrator_data:
-	norm_err = datum.calc_norm_metric()
-	oop_err = datum.calc_plane_metric()
-	print(f'Error for {str(datum)}: \n')
-	for name, case_norm, case_oop in zip(datum.integrator.body_names[:datum.integrator.n_orbiters], norm_err, oop_err):
+for integ, dt, cases in error_metrics:
+	print(f'Error for {integ}, dt = {dt}: \n')
+	for name, case_norm, case_oop in cases:
 		print(f'Case {name}:\n	Maximum error in position magnitude: {case_norm:f} km\n' +
 			  f'	Maximum distance out of plane: {case_oop:f} km')
 	print("\n")
